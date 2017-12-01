@@ -1,7 +1,7 @@
 /* MAIN.C file
-摘要：
-1.PD7延时反转，指示系统工作。
-2.上电，按指定PWM输出延时换相，实现电机基本运转功能。
+ժҪ��
+1.PD7��ʱ��ת��ָʾϵͳ������
+2.�ϵ磬��ָ��PWM�����ʱ���࣬ʵ�ֵ��������ת���ܡ�
 2013.5.8
  */
 #include "stm8s.h"
@@ -10,17 +10,17 @@
 #define PWM_FREQUENCY 16000
 
 static const u16 hArrPwmVal = ((u16)((STM8_FREQ_MHZ * (u32)1000000)/PWM_FREQUENCY));
-//PWM信号周期
+//PWM�ź�����
 
 #define PWMOUT 15
-//按15%占空比输出
+//��15%ռ�ձ����
 
 const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};
-//六步法中，CH1\CH2通道极性及使能配置
+//�������У�CH1\CH2ͨ�����Լ�ʹ������
 const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
-//六步法中，CH3通道极性及使能配置
+//�������У�CH3ͨ�����Լ�ʹ������
 
-//上桥臂开关控制端口定义
+//���űۿ��ؿ��ƶ˿ڶ���
 #define MCO1_PORT GPIOC
 #define MCO1_PIN	GPIO_PIN_3
 #define MCO3_PORT GPIOC
@@ -28,14 +28,14 @@ const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 #define MCO5_PORT GPIOC
 #define MCO5_PIN	GPIO_PIN_6
 
-//下桥臂开关控制端口定义
+//���űۿ��ؿ��ƶ˿ڶ���
 #define MCO0_PORT GPIOC
 #define MCO0_PIN	GPIO_PIN_2
 #define MCO2_PORT GPIOC
 #define MCO2_PIN	GPIO_PIN_1
 #define MCO4_PORT GPIOE
 #define MCO4_PIN	GPIO_PIN_5
-//下桥臂低电平开关管导通
+//���ű۵͵�ƽ���عܵ�ͨ
 #define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN; 
 #define PWM_B_OFF MCO2_PORT->ODR |= (u8)MCO2_PIN; 
 #define PWM_C_OFF MCO4_PORT->ODR |= (u8)MCO4_PIN; 
@@ -44,38 +44,38 @@ const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 #define PWM_B_ON MCO2_PORT->ODR &= (u8)(~MCO2_PIN); 
 #define PWM_C_ON MCO4_PORT->ODR &= (u8)(~MCO4_PIN); 
 
-//换相子函数声明
+//�����Ӻ�������
 void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue);
 
-//初始化按键，指示灯端口
+//��ʼ��������ָʾ�ƶ˿�
 void GPIO_int(void)
 {
 	 /* LEDs */
 	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST);
 }
 
-//系统时钟配置：内部16M
+//ϵͳʱ�����ã��ڲ�16M
 void Clock_init(void)
 {
 	/* Select fCPU = 16MHz */
   CLK_SYSCLKConfig(CLK_PRESCALER_HSIDIV1);
 }
 
-//换相电路开关管IO初始化
+//�����·���ع�IO��ʼ��
 void PWM_IO_init(void)
 {	
-  //PB012 下桥臂0有效 ,配置为高电平
+  //PB012 ���ű�0��Ч ,����Ϊ�ߵ�ƽ
 	GPIO_Init(MCO0_PORT, MCO0_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(MCO2_PORT, MCO2_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	
-	//PC123 上桥臂1有效,配置为低电平	
+	//PC123 ���ű�1��Ч,����Ϊ�͵�ƽ	
 	GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
 	GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);		
 }
 
-//高级定时器初始化配置
+//�߼���ʱ����ʼ������
 void Tim1_init(void)
 {
 	 /* TIM1 Peripheral Configuration */ 
@@ -100,29 +100,29 @@ main()
 	unsigned char step=0;
 	unsigned int outpwm=0;
 	
-	for(tem_c=0;tem_c<50000;tem_c++);//上电延时，等待系统稳定
+	for(tem_c=0;tem_c<50000;tem_c++);//�ϵ���ʱ���ȴ�ϵͳ�ȶ�
 
-	Clock_init();//指示灯端口初始化
-	GPIO_int();//时钟配置
+	Clock_init();//ָʾ�ƶ˿ڳ�ʼ��
+	GPIO_int();//ʱ������
 	
-	PWM_IO_init();//开关管控制端口初始化
-	Tim1_init();//高级定时器配置	
+	PWM_IO_init();//���عܿ��ƶ˿ڳ�ʼ��
+	Tim1_init();//�߼���ʱ������	
 	outpwm=hArrPwmVal*PWMOUT/100;
 	while (1)
 	{
-		for(tem_c=0;tem_c<6000;tem_c++);//延时时间
-		GPIO_WriteReverse(GPIOD,GPIO_PIN_7);//PD7指示灯反转
+		for(tem_c=0;tem_c<6000;tem_c++);//��ʱʱ��
+		GPIO_WriteReverse(GPIOD,GPIO_PIN_7);//PD7ָʾ�Ʒ�ת
 		step++;
 		if(step>=6)step=0;
 		Commutation(step,outpwm);
 	}
 }
 
-//换向输出PWM值，
-//bHallStartStep:当前换相步序0-5，OutPwmValue 输出PWM值
+//�������PWMֵ��
+//bHallStartStep:��ǰ���ಽ��0-5��OutPwmValue ���PWMֵ
 void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue)
 {	
-   TIM1->BKR &= (uint8_t)(~TIM1_BKR_MOE);//禁止PWM输出
+   TIM1->BKR &= (uint8_t)(~TIM1_BKR_MOE);//��ֹPWM���
 	if(bHallStartStep!=3&&bHallStartStep!=4)
 	PWM_A_OFF;
 	if(bHallStartStep!=0&&bHallStartStep!=5)
@@ -130,7 +130,7 @@ void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue)
 	if(bHallStartStep!=1&&bHallStartStep!=2)
 	PWM_C_OFF;
 	 
-	//根据换相步序，打开不同的开关管，并施加正确的PWM信号
+	//���ݻ��ಽ�򣬴򿪲�ͬ�Ŀ��عܣ���ʩ����ȷ��PWM�ź�
 	if(bHallStartStep==0)//AB
 	{
 		TIM1->CCR3H = (uint8_t)(OutPwmValue >> 8);
@@ -170,7 +170,7 @@ void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue)
 	
 	TIM1->CCER1=PWM_EN1_TAB[bHallStartStep];
 	TIM1->CCER2=PWM_EN2_TAB[bHallStartStep];		
-	TIM1->BKR|=TIM1_BKR_MOE;//使能PWM输出
+	TIM1->BKR|=TIM1_BKR_MOE;//ʹ��PWM���
 }
 
 #ifdef USE_FULL_ASSERT
