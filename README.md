@@ -11,3 +11,9 @@ bldc for fan
 * git log	--- 查看提交的历史
 * git reset --hard HEAD^	--- 版本回退  
 * git reflog 	---查看命令的历史
+
+配置相关： 本地的git总要与远程服务器保持同步，所以要配置关于committer的远程相关的账号。
+
+* git config --global --edit	---编辑配置文件
+* git commit --amend --reset-author	---配置完后，修改本次提交所使用的用户身份
+
