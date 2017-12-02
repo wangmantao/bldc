@@ -11,10 +11,7 @@
 
 static const u16 hArrPwmVal = ((u16)((STM8_FREQ_MHZ * (u32)1000000)/PWM_FREQUENCY));
 //PWM信号周期
-
-#define PWMOUT 15
-//按15%占空比输出
-
+#define PWMOUT 15 //按15%占空比输出 
 const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};
 //六步法中，CH1\CH2通道极性及使能配置
 const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
@@ -22,7 +19,7 @@ const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 
 //上桥臂开关控制端口定义
 #define MCO1_PORT GPIOC
-#define MCO1_PIN	GPIO_PIN_3
+#define MCO1_PIN	GPIO_PIN_3 	// 或 0000 1000 (0x8421) PC3
 #define MCO3_PORT GPIOC
 #define MCO3_PIN	GPIO_PIN_7
 #define MCO5_PORT GPIOC
@@ -34,9 +31,9 @@ const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 #define MCO2_PORT GPIOC
 #define MCO2_PIN	GPIO_PIN_1
 #define MCO4_PORT GPIOE
-#define MCO4_PIN	GPIO_PIN_5
-//下桥臂低电平开关管导通
-#define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN; 
+#define MCO4_PIN	GPIO_PIN_5  // PE5
+//下桥臂低电平开关管导通 (因低电平有效，所以OFF时，要或算1）
+#define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN;  
 #define PWM_B_OFF MCO2_PORT->ODR |= (u8)MCO2_PIN; 
 #define PWM_C_OFF MCO4_PORT->ODR |= (u8)MCO4_PIN; 
 
@@ -51,7 +48,7 @@ void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue);
 void GPIO_int(void)
 {
 	 /* LEDs */
-	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST);
+	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST); //PD7 输出
 }
 
 //系统时钟配置：内部16M
@@ -64,7 +61,7 @@ void Clock_init(void)
 //换相电路开关管IO初始化
 void PWM_IO_init(void)
 {	
-  //PB012 下桥臂0有效 ,配置为高电平
+  	//PB012 下桥臂0有效 ,配置为高电平
 	GPIO_Init(MCO0_PORT, MCO0_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(MCO2_PORT, MCO2_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
@@ -78,42 +75,43 @@ void PWM_IO_init(void)
 //高级定时器初始化配置
 void Tim1_init(void)
 {
-	 /* TIM1 Peripheral Configuration */ 
-  TIM1_DeInit();
+	 /* TIM1 Peripheral Configuration */  // TIM1 外设配置是什么意思
+	// Tim1 外设寄存器反初始化，即为reset状态
+	TIM1_DeInit(); 
+	//初始化timer1的基本单元
+	TIM1_TimeBaseInit(0, TIM1_COUNTERMODE_UP, hArrPwmVal, 0); 
 
-  TIM1_TimeBaseInit(0, TIM1_COUNTERMODE_UP, hArrPwmVal, 0);
-
-  TIM1_OC1Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
-
-  TIM1_OC2Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
-
-  TIM1_OC3Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
-
-  TIM1_CCPreloadControl(DISABLE);
+	//初始化teim1 通道1
+	TIM1_OC1Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
+	TIM1_OC2Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
+	TIM1_OC3Init(TIM1_OCMODE_PWM1, TIM1_OUTPUTSTATE_ENABLE, TIM1_OUTPUTNSTATE_DISABLE, hArrPwmVal*0, TIM1_OCPOLARITY_HIGH, TIM1_OCNPOLARITY_LOW, TIM1_OCIDLESTATE_RESET, TIM1_OCNIDLESTATE_SET); 
+	//置位或复位－捕获比较预加载控制位
+	TIM1_CCPreloadControl(DISABLE);
+	//使能或去能 timer1外设
 	TIM1_Cmd(ENABLE);
 }
 
 
 main()
 {
-  unsigned int tem_c=0;
+  	unsigned int tem_c=0;
 	unsigned char step=0;
 	unsigned int outpwm=0;
 	
-	for(tem_c=0;tem_c<50000;tem_c++);//上电延时，等待系统稳定
+	for(tem_c=0;tem_c<50000;tem_c++);//上电延时，等待系统稳定(50k个时钟周期）
 
-	Clock_init();//指示灯端口初始化
-	GPIO_int();//时钟配置
-	
+	Clock_init();//时钟配置
+	GPIO_int();//指示灯端口初始化 
 	PWM_IO_init();//开关管控制端口初始化
 	Tim1_init();//高级定时器配置	
 	outpwm=hArrPwmVal*PWMOUT/100;
 	while (1)
 	{
 		for(tem_c=0;tem_c<6000;tem_c++);//延时时间
+		// 让指定的GPIO_PIN电平反转
 		GPIO_WriteReverse(GPIOD,GPIO_PIN_7);//PD7指示灯反转
 		step++;
-		if(step>=6)step=0;
+		if(step>=6)step=0; // step 0~5 有效
 		Commutation(step,outpwm);
 	}
 }
