@@ -5,21 +5,63 @@ bldc for fan
 * 这项实验用了哪些端口，将要测试这些端口上的波形
     - 在datasheet中可以找 PORT A，找相关的信息。
     - 可有"PA1"去找对应的"pin no."
-        - GPIO_PIN_3 是由stm8s_gpio.h 中定义的 0x08
+        - GPIO_PIN_3 是由stm8s_gpio.h 中定义的 0x08 （0000 1000 或出第四位)
         - 所有MOSFET控制都有PORRT C/E控制，PC1/2/3/6/7 5个＋PE5 1个 (确认PE5 pin no.17 是不是接的下桥mosfet4)
-        
+    - 测试时钟端口是否是16M
+    - 检测LED端口(PD7)是否有个动作，可以手动改改看效果
 * 程序的一些基本定义
     - 定义下桥三个FET的开/关（低电平开，查看P/N型MOSFET工作原理）
     - 解读: #define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN;
+        - 例，port c的数据存器是0000 1111，即要求此时port c的低4位脚输出，但时A路(桥臂)控制受3脚影响
         - 当某处调用PWM_A_OFF时，实际上执行的是：为MCO0_PORT的ODR赋新的值，新值为原值与MCO0_PIN的或值  (参考: i |= j;即 i = i || j;:)。即，两个值只要有一个为1, PWM_A_OFF就为1。
         - 理解MCO0_PORT->ODR, "->"是取结构中的成员，MCO0_PORT是一个结构，内含一个ODR成员。ODR是什么呢？
             - 首先了解i/o port硬件寄存器的结构：一个port寄存器结构约有5个寄存器，其中有ODR（在其port结构中排第一）为该port输出数据寄存器,它有8个位
             - 输出模式下，写入该寄存器的值，通过锁存器加到相应的引脚上。读ODR的值，返回之前锁存器的值（因为在输出模式下，写入寄存器的值是不会存入寄存器）
-            - MCO0_PIN 它是宏 GPIO_PIN 的代名词, 在一个gpio.h头文件中定义，该头文件定义了，GPIO外围的功能函数原型和宏。
-            - 总结：为MCO0端输出数据寄存器赋新值，新值会受MCO0_PIN的影响
+            - MCO0_PIN 它是宏 GPIO_PIN_3 的代名词, 在一个gpio.h头文件中定义，该头文件定义了，GPIO外围的功能函数原型和宏。
+            - 总为MCO0端输出数据寄存器赋新值，新值会受MCO0_PIN的影响
 
 * 分析程序的调用逻辑
     - 库是怎么调用的，用到了库的什么功能
+    - main的运行：4个初始化
+        - 指示端口
+        - 时钟
+        - 开关管的控制
+        - 高级定时器
+* 应用STM库，须要学说STM的术语（概念）
+    - 时钟_系统时钟配置 （可能还有其它时种）
+    - GPIO_初始化
+  
+* 代码分析
+GIO_Init(端口，pin类型，pin模式） 
+该函数利用这些参数，去配置ODR(数据方向寄存器),DDR(数据输出锁存器),CR1(控制器1),CR2(控制器2) 
+CR1 控制：
+CR2 控制：
+控制寄存器1(CR1)和控制寄存器2(CR2)用于对输入/输出进行配置。任何一个I/O引脚可以通过
+对DDR,ODR,CR1和CR2寄存器的相应位进行编程来配置。
+寄存器中的位n对应于口的引脚 n 。
+
+main.c:	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST); //PD7 输出
+
+main.c:	GPIO_Init(MCO0_PORT, MCO0_PIN,GPIO_MODE_OUT_PP_HIGH_FAST); 下管;推拉式，高电平，10MHz (寄存器值：1111 0000)
+main.c:	GPIO_Init(MCO2_PORT, MCO2_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+main.c:	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+main.c:	GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);  上管;
+main.c:	GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
+main.c:	GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);	
+总结： 上/下管都初始化为输出推拉式，快速工作状态，下管置高，上管置低
+
+模式说明(GPIO_MODE_OUT_PP_HIGH_FAST):
+GPIO_MODE_OUT_PP_LOW_SLOW  = (uint8_t)0xC0,  /*!< Output push-pull, low level, 2MHz */
+GPIO_MODE_OUT_OD_HIZ_FAST  = (uint8_t)0xB0,  /*!< Output open-drain, high-impedance level,10MHz */
+GPIO_MODE_OUT_PP_HIGH_FAST = (uint8_t)0xF0,  /*!< Output push-pull, high level, 10MHz */
+GPIO_MODE_OUT_OD_HIZ_SLOW  = (uint8_t)0x90,  /*!< Output open-drain, high-impedance level, 2MHz */
+GPIO_MODE_OUT_PP_HIGH_SLOW = (uint8_t)0xD0   /*!< Output push-pull, high level, 2MHz */
+
+* 除了有main.c的程序外，还有库中timer相关。有没时间细分了，接下来看《基于STM8S》和库的手册（用库函数名去搜索）
+-------------------------------------------------------------------------------
+## 遇到的问题及对策
+### 每次开机都要打开哪些与项目相关的文件，一个个的找费时。所有找到工具：
+devilspie 和 vmctrl(命令行工具）  
 
 -------------------------------------------------------------------------------
 ## 建立Git环境，可多处编译并提交，所有平台保持代码同步
