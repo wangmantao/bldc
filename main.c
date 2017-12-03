@@ -16,7 +16,7 @@ const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};
 //六步法中，CH1\CH2通道极性及使能配置
 const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 //六步法中，CH3通道极性及使能配置
-
+2
 //上桥臂开关控制端口定义
 #define MCO1_PORT GPIOC
 #define MCO1_PIN	GPIO_PIN_3 	// 或 0000 1000 (0x8421) PC3
