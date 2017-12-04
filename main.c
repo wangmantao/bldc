@@ -105,6 +105,7 @@ main()
 	PWM_IO_init();//开关管控制端口初始化
 	Tim1_init();//高级定时器配置	
 	outpwm=hArrPwmVal*PWMOUT/100;
+
 	while (1)
 	{
 		for(tem_c=0;tem_c<6000;tem_c++);//延时时间

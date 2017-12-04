@@ -51,7 +51,7 @@ static void TI4_Config(uint8_t TIM1_ICPolarity, uint8_t TIM1_ICSelection,
   */
 void TIM1_DeInit(void)
 {
-    TIM1->CR1  = TIM1_CR1_RESET_VALUE;
+    TIM1->CR1  = TIM1_CR1_RESET_VALUE; //
     TIM1->CR2  = TIM1_CR2_RESET_VALUE;
     TIM1->SMCR = TIM1_SMCR_RESET_VALUE;
     TIM1->ETR  = TIM1_ETR_RESET_VALUE;
