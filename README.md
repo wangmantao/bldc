@@ -2,13 +2,13 @@
 bldc for fan
 ## 分析代码
 ### 思路
-* 这项实验用了哪些端口，将要测试这些端口上的波形
-    - 在datasheet中可以找 PORT A，找相关的信息。
-    - 可有"PA1"去找对应的"pin no."
-        - GPIO_PIN_3 是由stm8s_gpio.h 中定义的 0x08 （0000 1000 或出第四位)
-        - 所有MOSFET控制都有PORRT C/E控制，PC1/2/3/6/7 5个＋PE5 1个 (确认PE5 pin no.17 是不是接的下桥mosfet4)
-    - 测试时钟端口是否是16M
-    - 检测LED端口(PD7)是否有个动作，可以手动改改看效果
+* 由于参考书的MCU型号与当前MCU型号不一致，所以要换
+    - PORTC 1/2/3/6/7 (5个）  只有3/4/5/6/7 只能对应3/7
+    - PORT  
+    - PORTE 5 (1个)
+    确认STM8S003F3 有哪些port, 这些port在示例中是用来干什么的？（网络好了，再实施）
+    了解6步法 (通读第7、8章） 
+	完成端口改造，并测波形分析6步法
 * 程序的一些基本定义
     - 定义下桥三个FET的开/关（低电平开，查看P/N型MOSFET工作原理）
     - 解读: #define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN;
@@ -27,6 +27,7 @@ bldc for fan
         - 时钟
         - 开关管的控制
         - 高级定时器
+
 * 应用STM库，须要学说STM的术语（概念）
     - 时钟_系统时钟配置 （可能还有其它时种）
     - GPIO_初始化
@@ -40,28 +41,28 @@ CR2 控制：
 对DDR,ODR,CR1和CR2寄存器的相应位进行编程来配置。
 寄存器中的位n对应于口的引脚 n 。
 
-main.c:	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST); //PD7 输出
+ 	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST); //PD7 输出
 
-main.c:	GPIO_Init(MCO0_PORT, MCO0_PIN,GPIO_MODE_OUT_PP_HIGH_FAST); 下管;推拉式，高电平，10MHz (寄存器值：1111 0000)
-main.c:	GPIO_Init(MCO2_PORT, MCO2_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
-main.c:	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
-main.c:	GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);  上管;
-main.c:	GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
-main.c:	GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);	
+	GPIO_Init(MCO0_PORT, MCO0_PIN,GPIO_MODE_OUT_PP_HIGH_FAST); 下管;推拉式，高电平，10MHz (寄存器值：1111 0000)
+	GPIO_Init(MCO2_PORT, MCO2_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+ 	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+ 	GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);  上管;
+ 	GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
+ 	GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);	
 总结： 上/下管都初始化为输出推拉式，快速工作状态，下管置高，上管置低
 
 模式说明(GPIO_MODE_OUT_PP_HIGH_FAST):
-GPIO_MODE_OUT_PP_LOW_SLOW  = (uint8_t)0xC0,  /*!< Output push-pull, low level, 2MHz */
-GPIO_MODE_OUT_OD_HIZ_FAST  = (uint8_t)0xB0,  /*!< Output open-drain, high-impedance level,10MHz */
-GPIO_MODE_OUT_PP_HIGH_FAST = (uint8_t)0xF0,  /*!< Output push-pull, high level, 10MHz */
-GPIO_MODE_OUT_OD_HIZ_SLOW  = (uint8_t)0x90,  /*!< Output open-drain, high-impedance level, 2MHz */
-GPIO_MODE_OUT_PP_HIGH_SLOW = (uint8_t)0xD0   /*!< Output push-pull, high level, 2MHz */
+	GPIO_MODE_OUT_PP_LOW_SLOW  = (uint8_t)0xC0,  /*!< Output push-pull, low level, 2MHz */
+	GPIO_MODE_OUT_OD_HIZ_FAST  = (uint8_t)0xB0,  /*!< Output open-drain, high-impedance level,10MHz */
+	GPIO_MODE_OUT_PP_HIGH_FAST = (uint8_t)0xF0,  /*!< Output push-pull, high level, 10MHz */
+	GPIO_MODE_OUT_OD_HIZ_SLOW  = (uint8_t)0x90,  /*!< Output open-drain, high-impedance level, 2MHz */
+	GPIO_MODE_OUT_PP_HIGH_SLOW = (uint8_t)0xD0   /*!< Output push-pull, high level, 2MHz */
 
 * 除了有main.c的程序外，还有库中timer相关。有没时间细分了，接下来看《基于STM8S》和库的手册（用库函数名去搜索）
 -------------------------------------------------------------------------------
 ## 遇到的问题及对策
 ### 每次开机都要打开哪些与项目相关的文件，一个个的找费时。所有找到工具：
-devilspie 和 vmctrl(命令行工具）  
+devilspie 和 wmctrl(命令行工具）  
 
 -------------------------------------------------------------------------------
 ## 建立Git环境，可多处编译并提交，所有平台保持代码同步
