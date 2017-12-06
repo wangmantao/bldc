@@ -17,12 +17,13 @@ static const u16 hArrPwmVal = ((u16)((STM8_FREQ_MHZ * (u32)1000000)/PWM_FREQUENC
 
 const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};
 //六步法中，CH1\CH2通道极性及使能配置
+
 const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 //六步法中，CH3通道极性及使能配置
 
 //上桥臂开关控制端口定义
 #define MCO1_PORT GPIOC
-#define MCO1_PIN	GPIO_PIN_3
+#define MCO1_PIN	GPIO_PIN_3  
 #define MCO3_PORT GPIOC
 #define MCO3_PIN	GPIO_PIN_7
 #define MCO5_PORT GPIOC
@@ -33,8 +34,9 @@ const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
 #define MCO0_PIN	GPIO_PIN_5  // 用5替换2 (因为003f3没有PC1/2)
 #define MCO2_PORT GPIOC
 #define MCO2_PIN	GPIO_PIN_4 // 用4替换1
-#define MCO4_PORT GPIOE
-#define MCO4_PIN	GPIO_PIN_5
+#define MCO4_PORT GPIOD
+#define MCO4_PIN	GPIO_PIN_2
+
 //下桥臂低电平开关管导通
 #define PWM_A_OFF MCO0_PORT->ODR |= (u8)MCO0_PIN; 
 #define PWM_B_OFF MCO2_PORT->ODR |= (u8)MCO2_PIN; 
@@ -51,7 +53,8 @@ void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue);
 void GPIO_int(void)
 {
 	 /* LEDs */
-	GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST);  //PD7 
+	//GPIO_Init(GPIOD, GPIO_PIN_7, GPIO_MODE_OUT_PP_HIGH_FAST);  //PD7 
+    //GPIO_Init(GPIOD, GPIO_PIN_2, GPIO_MODE_OUT_PP_HIGH_FAST);  //PD7 
 }
 
 //系统时钟配置：内部16M
@@ -108,10 +111,12 @@ main()
 	PWM_IO_init();//开关管控制端口初始化
 	Tim1_init();//高级定时器配置	
 	outpwm=hArrPwmVal*PWMOUT/100;
+
+    PWM_IO_init();//开关管控制端口初始化
 	while (1)
 	{
 		for(tem_c=0;tem_c<6000;tem_c++);//延时时间
-		GPIO_WriteReverse(GPIOD,GPIO_PIN_7);//PD7指示灯反转
+		//GPIO_WriteReverse(GPIOD,GPIO_PIN_7);//PD7指示灯反转
 		step++;
 		if(step>=6)step=0;
 		Commutation(step,outpwm);
