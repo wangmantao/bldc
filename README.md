@@ -1,9 +1,38 @@
 # bldc
 bldc for fan
+
+## 为了linux体验(SDCC)
+* 中断向量表的问题 void handler(void) __trap (...) 
+* 相关软件
+    - stm8flash, a utility for interfacing your ST-Link dongle
+    - sdcc 
+* 教程
+    - https://www.ondrovo.com/a/20170107-stm8-getting-started/
+* 概念
+    - 标准外设库 （SPL）反映底层（寄存器）的。
+    - 先从官网下载官网的库及手册(是chm格式 kchmviewer)  (/home/wmt/soft 存放)
+    - 有个兼容SPL库用于SDCC https://github.com/gicking/SPL_2.2.0_SDCC_patch 
+        - 暂不知道其作用，及怎么用
+
 ## 进展
+* 做出电路图，给CUSTOMER打板。
+    - 可能是个有缺陷的电路图，但是可以给他们先做，做好做坏先不管。
+    - 当务之急是先把万能板功能先添加起来。
+	- 画出反电动势检测电路
+	- 研究反电动势程序与实现
+
+* 照客户的思路
+	- 不用做硬件的安装，缺点时效性长。但可能客户的产品调试都会成为自己的任务。
+	- 所以不要在客户板上做实验，但是负责任的说法是：程序要在客户板上运行产能说的过去。
+	- 客户没提供板与电路，程序也没地方跑。
+	 
+* 要买的物件
+    - 三极管   (保险丝)
+
 * 修改示例程序可以产生正常的PWM
     - PC1/PC2 用PC4/PC5 代替，用于下管驱动
     - Option Byte设置： AFR0= PC5为TIM2_CH1 / PC6 为TIM1_CH1 / PC7 为TIM1_CH2
+
 * 由于要驱动马达，大马达要用12伏，P管不方便驱动，要买三极管。先用5V驱动小马达之前要做的工作：
     - 用Y型电阻代替三相马达，检流电阻不要。
     - 分析出高驱动还是低驱动，并实现。
@@ -13,9 +42,7 @@ bldc for fan
             - 但是，无PWM时，无PWM时，不能使其置位于无效的高电平。参考一下 PWM_A_OFF 干了些什么.
 
     - 查看每相电阻的电流。（需要用上ADC工具，还要做出分压采样电阻）
-    
- * 要买的物件
-    - 三极管   
+
 ## 分析代码
 ### 思路
 * 由于参考书的MCU型号与当前MCU型号不一致，所以要换
