@@ -4,7 +4,8 @@
 2.上电，按指定PWM输出延时换相，实现电机基本运转功能。
 2013.5.8
  */
-#include "stm8s.h"
+// #include "stm8s.h"
+#include "./Libraries/inc/stm8s.h"
 
 #define STM8_FREQ_MHZ 16
 #define PWM_FREQUENCY 16000
