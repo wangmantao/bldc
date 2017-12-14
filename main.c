@@ -12,15 +12,15 @@
 static const u16 hArrPwmVal = ((u16)((STM8_FREQ_MHZ * (u32)1000000)/PWM_FREQUENCY));
 //PWM信号周期
 
-#define PWMOUT 15
+#define PWMOUT 15 
 //按15%占空比输出
 
-//const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};
-const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x30,0x30,0x03,0x03};
+const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x10,0x10,0x01,0x01};   // 正极性驱动 
+//const unsigned char PWM_EN1_TAB[6]={0x00,0x00,0x30,0x30,0x03,0x03};    // 负极性驱动 
 //六步法中，CH1\CH2通道极性及使能配置 CH1 PC6 C相 / CH2 PC7 B相
 
-//const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};
-const unsigned char PWM_EN2_TAB[6]={0x03,0x03,0x00,0x00,0x00,0x00};
+const unsigned char PWM_EN2_TAB[6]={0x01,0x01,0x00,0x00,0x00,0x00};  // 正极性驱动 
+//const unsigned char PWM_EN2_TAB[6]={0x0`3,0x03,0x00,0x00,0x00,0x00};    // 负极性驱动 
 //六步法中，CH3通道极性及使能配置 CH3 PC3 A相
 /* 以上总结分析：
     PWM_EN_TAB 指定了所用到的输出比较寄存器，
@@ -80,12 +80,12 @@ void PWM_IO_init(void)
 	GPIO_Init(MCO4_PORT, MCO4_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
 	
 	//PC 3 6 7 上桥臂1有效,配置为低电平	
-	//GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
-	//GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
-	//GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);		
-    GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
-    GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
-    GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);       
+	GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
+	GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_LOW_FAST);
+	GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_LOW_FAST);		
+    //GPIO_Init(MCO1_PORT, MCO1_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+    //GPIO_Init(MCO3_PORT, MCO3_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);
+    //GPIO_Init(MCO5_PORT, MCO5_PIN,GPIO_MODE_OUT_PP_HIGH_FAST);       
 }
 
 //高级定时器初始化配置
@@ -139,57 +139,57 @@ void Commutation(unsigned char bHallStartStep,unsigned int OutPwmValue)
 {	
    TIM1->BKR &= (uint8_t)(~TIM1_BKR_MOE);//禁止PWM输出
 	if(bHallStartStep!=3&&bHallStartStep!=4)
-	//PWM_A_OFF;
-    PWM_A_ON;
+	PWM_A_OFF;
+    //PWM_A_ON;
 	if(bHallStartStep!=0&&bHallStartStep!=5)
-	//PWM_B_OFF;
-    PWM_B_ON;
+	PWM_B_OFF;
+    //PWM_B_ON;
 	if(bHallStartStep!=1&&bHallStartStep!=2)
-	//PWM_C_OFF;
-    PWM_C_ON;
+	PWM_C_OFF;
+    //PWM_C_ON;
 	 
 	//根据换相步序，打开不同的开关管，并施加正确的PWM信号
 	if(bHallStartStep==0)//AB
 	{
 		TIM1->CCR3H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR3L = (uint8_t)(OutPwmValue);
-		//PWM_B_ON;
-        PWM_B_OFF;
+		PWM_B_ON;
+        //PWM_B_OFF;
 	}
   else if(bHallStartStep==1)	//AC
 	{
 		TIM1->CCR3H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR3L = (uint8_t)(OutPwmValue);
-	  //PWM_C_ON;
-      PWM_C_OFF;
+	  PWM_C_ON;
+      //PWM_C_OFF;
 	}
 	else if(bHallStartStep==2)	//BC
 	{
 		TIM1->CCR2H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR2L = (uint8_t)(OutPwmValue);
-	  //PWM_C_ON;
-      PWM_C_OFF;
+	  PWM_C_ON;
+      //PWM_C_OFF;
 	}
 	else if(bHallStartStep==3)	//BA
 	{
 		TIM1->CCR2H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR2L = (uint8_t)(OutPwmValue);
-	  //PWM_A_ON;
-      PWM_A_OFF;
+	  PWM_A_ON;
+      //PWM_A_OFF;
 	}
 	else if(bHallStartStep==4)//CA
 	{
 		TIM1->CCR1H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR1L = (uint8_t)(OutPwmValue);
-	  //PWM_A_ON;
-      PWM_A_OFF;
+	  PWM_A_ON;
+      //PWM_A_OFF;
 	}
 	else if(bHallStartStep==5)	//CB
 	{
 		TIM1->CCR1H = (uint8_t)(OutPwmValue >> 8);
     TIM1->CCR1L = (uint8_t)(OutPwmValue);
-	  //PWM_B_ON;
-      PWM_B_OFF;
+	  PWM_B_ON;
+      //PWM_B_OFF;
 	}
 	
 	TIM1->CCER1=PWM_EN1_TAB[bHallStartStep];
