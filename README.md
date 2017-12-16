@@ -2,19 +2,39 @@
 bldc for fan
 
 ## 为了linux体验(SDCC)
+
+* 实现目标与过程 
+  - 用bldc项目编译成功
+    - 参考patch的makefile已经成功，但SDCC编译code size 大，写入不了
+    - 把所有用到的库函数抽出来，又有很我错误。所以还是改选windows, 参考STM8S-USB
+    - 为项目编译建立一个sh 
+    - 写入编译stm8的命令行
+    - 用上STM的库 为SDCC打补丁 Unsupported Compiler! 
+        -  https://github.com/Kiogora/stm8s-sdcc-stdperiph-template 可解决吗？
+        在主h文件中,Library configuration sectionk中定义：
+         ＃elif defined(__SDCC)
+        - #define _SDCC_
 * 中断向量表的问题 void handler(void) __trap (...) 
 * 相关软件
     - stm8flash, a utility for interfacing your ST-Link dongle
     - sdcc 
+
 * 教程
     - https://www.ondrovo.com/a/20170107-stm8-getting-started/
+    - STM库中会检查编译器
+    - https://www.cnblogs.com/aundry/p/8024435.html 很简单的环境搭建
+    - https://github.com/ZiB/STM8S-USB   windows 版的makefile for STVD
+	
 * 概念
     - 标准外设库 （SPL）反映底层（寄存器）的。
     - 先从官网下载官网的库及手册(是chm格式 kchmviewer)  (/home/wmt/soft 存放)
     - 有个兼容SPL库用于SDCC https://github.com/gicking/SPL_2.2.0_SDCC_patch 
-        - 暂不知道其作用，及怎么用
+	- 暂不知道其作用，及怎么用
+
 * 目的分析
-    - 因为要
+    - 因为要频繁的改写程序，并烧录，再测试，再改写程序。
+    问题是打开不同的窗口，点击不同按键，效率.
+    希望，写完程序，一键到单片机 －－> Reset 后测试该测试的。停止测试有个开关（不拔掉电源线）
 
 ## 进展
 * 预定位实验
