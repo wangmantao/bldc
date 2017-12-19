@@ -8,5 +8,5 @@ Filename=bldc.stp
 Dependencies=
 [Options]
 ActiveProject=bldc
-ActiveConfig=Debug
+ActiveConfig=Release
 AddSortedElements=1

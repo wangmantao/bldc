@@ -1,0 +1,17 @@
+	nolist
+;
+;	MACROS FOR STM8 COMPILER
+;	Copyright (c) 2006 by COSMIC Software
+;
+;	test a bit
+;
+btst:	macro
+	if	\#==2
+	btjt	\1,\2,\@here
+	else
+	btjt	\1,\@here
+	endif
+\@here:
+	endm
+;
+	list
